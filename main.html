@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="mainstyle.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
@@ -18,8 +18,8 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            <button type="submit">Sign In</button>
-            <p class="login-link">Don't have an account? <a href="#">Sign up</a></p>
+            <button type="submit" onsubmit="location.href='loggedin.html'">Sign In</button>
+            <p class="login-link">Don't have an account? <a href="signup.html">Sign up</a></p>
         </form>
     </div>
 </body>
