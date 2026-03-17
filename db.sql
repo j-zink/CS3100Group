@@ -1,0 +1,12 @@
+CREATE DATABASE IF NOT EXISTS cs3100_project_db;
+USE cs3100_project_db;
+
+DROP TABLE users;
+
+CREATE TABLE users (
+    user_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    firstname VARCHAR(20) NOT NULL,
+    lastname VARCHAR(20) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    passwd VARCHAR(256) NOT NULL
+);
