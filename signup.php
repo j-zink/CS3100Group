@@ -1,8 +1,5 @@
 <?php
-    $host = 'localhost';
-    $db   = 'cs3100_project_db';
-    $user = 'cs3100user';
-    $pass = 'cs3100pass';
+    require_once 'config.php';
 
     try {
         $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
@@ -10,7 +7,16 @@
         $user_firstname = $_POST['firstname'];
         $user_lastname = $_POST['lastname'];
         $user_email = $_POST['email'];
-        $user_password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+        $user_password = $_POST['password'];
+        $user_confirm = $_POST['confirm'];
+
+        if ($user_password !== $user_confirm) {
+            echo "Error: Passwords do not match!";
+            exit;
+        }
+
+        // hashes the password using bcrypt
+        $user_password = password_hash($user_password, PASSWORD_DEFAULT);
 
         $sql = "INSERT INTO users (firstname, lastname, email, passwd) VALUES (?, ?, ?, ?)";
         $stmt = $pdo->prepare($sql);
