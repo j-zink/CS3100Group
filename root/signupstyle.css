@@ -71,6 +71,7 @@
         }
         .input-error {
              border: 2px solid red !important;
+             box-shadow: 0 0 0 1px red !important;
         }
         .field-error {
             color: red;
