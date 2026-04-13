@@ -19,13 +19,28 @@ if ($user_firstname === '') {
     exit;
 }
 
+if (strlen($user_firstname) > 20) {
+    header("Location: signup.html?error=long_firstname&field=firstname");
+    exit;
+}
+
 if ($user_lastname === '') {
     header("Location: signup.html?error=missing_lastname&field=lastname");
     exit;
 }
 
+if (strlen($user_lastname) > 20) {
+    header("Location: signup.html?error=long_lastname&field=lastname");
+    exit;
+}
+
 if ($user_email === '') {
     header("Location: signup.html?error=missing_email&field=email");
+    exit;
+}
+
+if (strlen($user_email) > 100) {
+    header("Location: signup.html?error=long_email&field=email");
     exit;
 }
 
@@ -36,6 +51,11 @@ if (!filter_var($user_email, FILTER_VALIDATE_EMAIL)) {
 
 if ($user_password === '') {
     header("Location: signup.html?error=missing_password&field=password");
+    exit;
+}
+
+if (strlen($user_password) > 256) {
+    header("Location: signup.html?error=long_password&field=password");
     exit;
 }
 
