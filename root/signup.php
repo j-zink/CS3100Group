@@ -1,25 +1,11 @@
 <?php
-<<<<<<< HEAD
 require_once 'config.php';
+session_start();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: signup.html");
     exit;
 }
-=======
-    require_once 'config.php';
-    session_start();
-
-    try {
-        $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass); // Add charset to prevent from injection attacks
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Will throw a more specific error message to the catch (PDOException $e)
-
-        $user_firstname = $_POST['firstname'];
-        $user_lastname = $_POST['lastname'];
-        $user_email = $_POST['email'];
-        $user_password = $_POST['password'];
-        $user_confirm = $_POST['confirm'];
->>>>>>> ded04a9f9859d496e37376c6060eb4d2178600f6
 
 $user_firstname = trim($_POST['firstname'] ?? '');
 $user_lastname  = trim($_POST['lastname'] ?? '');
