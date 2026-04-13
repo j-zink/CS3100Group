@@ -9,18 +9,68 @@
 <body>
     <div class="slogin-container">
         <h1>Login</h1>
-        <form action="login.php" method="POST">
+
+        <div class="login-status" id="login-status"></div>
+
+        <form action="login.php" method="POST" novalidate>
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" required>
+                <div class="field-error" id="email-error"></div>
             </div>
+
             <div class="form-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
+                <div class="field-error" id="password-error"></div>
             </div>
+
             <button type="submit">Sign In</button>
-            <p class="login-link">Don't have an account?<a href="signup.html">Sign up</a></p>
+            <p class="login-link">Don't have an account? <a href="signup.html">Sign up</a></p>
         </form>
     </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+
+        const error = params.get("error");
+        const field = params.get("field");
+        const email = params.get("email") || "";
+        const signup = params.get("signup");
+
+        document.getElementById("email").value = email;
+
+        const messages = {
+            missing_email: "Please enter your email address.",
+            invalid_email: "Please enter a valid email address.",
+            missing_password: "Please enter your password.",
+            invalid_login: "Invalid email or password.",
+            too_many_attempts: "Too many failed login attempts. Please wait 15 minutes and try again.",
+            server_error: "Something went wrong. Please try again."
+        };
+
+        if (field) {
+            const input = document.getElementById(field);
+            if (input) {
+                input.classList.add("input-error");
+            }
+
+            const errorBox = document.getElementById(field + "-error");
+            if (errorBox && messages[error]) {
+                errorBox.textContent = messages[error];
+            }
+        } else if (error === "server_error") {
+            const passwordError = document.getElementById("password-error");
+            if (passwordError) {
+                passwordError.textContent = messages[error];
+            }
+        }
+
+        if (signup === "success") {
+            const statusBox = document.getElementById("login-status");
+            statusBox.textContent = "Account created successfully. Please log in.";
+            statusBox.classList.add("success-message");
+        }
+    </script>
 </body>
 </html>

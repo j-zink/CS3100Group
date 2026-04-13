@@ -83,3 +83,34 @@ button:hover {
     color: #667eea;
     text-decoration: none;
 }
+
+input.input-error {
+    border: 2px solid red !important;
+    box-shadow: 0 0 0 1px red !important;
+}
+
+.field-error {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: 4px;
+    min-height: 1.1em;
+}
+
+.login-status {
+    min-height: 1.2em;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+}
+
+.success-message {
+    color: green;
+}
+
+.welcome-actions {
+    margin-top: 20px;
+}
+
+.logout-link {
+    display: inline-block;
+    text-decoration: none;
+}

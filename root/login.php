@@ -1,75 +1,92 @@
 <?php
-    require_once '../config.php'; // Made this ../config.php because it is now one level above the root 
-    session_start(); // Start a new session at the beginning of each login
+require_once '../config.php';
+session_start();
 
-    try {
-        $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass); // Add charset to prevent from injection attacks
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Will throw a more specific error message to the catch (PDOException $e)
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: index.html");
+    exit;
+}
 
-        $user_email = $_POST['email'];
-        $user_password = $_POST['password'];
-        
-        // Get the user's IP address
-        $ip_address = $_SERVER['REMOTE_ADDR'];
+$user_email = trim($_POST['email'] ?? '');
+$user_password = $_POST['password'] ?? '';
 
-        // --- RATE LIMITING CHECK ---
-        $time_limit = 15; // Lockout time in minutes
-        $max_attempts = 5; // Maximum allowed failed attempts
+function redirect_with_error($error, $field, $email = '') {
+    $url = "index.html?error=" . urlencode($error)
+         . "&field=" . urlencode($field)
+         . "&email=" . urlencode($email);
 
-        // Count failed attempts from this IP within the time limit
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip_address = ? AND attempt_time > (NOW() - INTERVAL ? MINUTE) AND success = 0");
-        $stmt->execute([$ip_address, $time_limit]);
-        $failed_attempts = $stmt->fetchColumn();
+    header("Location: $url");
+    exit;
+}
 
-        if ($failed_attempts >= $max_attempts) {
-            // Block the user if they've exceeded the limit
-            die("Too many failed login attempts. Please wait 15 minutes and try again.");
-        }
-        // ---------------------------
+if ($user_email === '') {
+    redirect_with_error('missing_email', 'email', $user_email);
+}
 
-        $sql = "SELECT firstname, passwd FROM users WHERE email = ?";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([$user_email]);
-        $result = $stmt->fetch();
+if (!filter_var($user_email, FILTER_VALIDATE_EMAIL)) {
+    redirect_with_error('invalid_email', 'email', $user_email);
+}
 
-        if ($result && password_verify($user_password, $result['passwd'])) {
-            
-            // --- LOG SUCCESSFUL ATTEMPT ---
-            $log_stmt = $pdo->prepare("INSERT INTO login_attempts (ip_address, email_attempted, success) VALUES (?, ?, 1)");
-            $log_stmt->execute([$ip_address, $user_email]);
-            
-            session_regenerate_id(true); // Generate a new session id after each successful login so an attacker cannot utilize the previous one
-            $_SESSION['email'] = $user_email;
-            $_SESSION['firstname'] = $result['firstname'];
-            
-            $firstname = $result['firstname'];
-            ?>
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <link rel="stylesheet" href="mainstyle.css">
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Welcome</title>
-            </head>
-            <body>
-                <div class="slogin-container">
-                    <h1>Welcome <?php echo htmlspecialchars($firstname); ?>, you've successfully logged in!</h1>
-                </div>
-            </body>
-            </html>
-            <?php
-            exit;
-        } else {
-            // --- LOG FAILED ATTEMPT ---
-            $log_stmt = $pdo->prepare("INSERT INTO login_attempts (ip_address, email_attempted, success) VALUES (?, ?, 0)");
-            $log_stmt->execute([$ip_address, $user_email]);
-            
-            echo "Invalid email or password!";
-        }
-    } 
+if ($user_password === '') {
+    redirect_with_error('missing_password', 'password', $user_email);
+}
 
-    catch (PDOException $e) {
-        echo "Connection failed: " . $e->getMessage();
+try {
+    $pdo = new PDO(
+        "mysql:host=$host;dbname=$db;charset=utf8mb4",
+        $user,
+        $pass,
+        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
+    );
+
+    $ip_address = $_SERVER['REMOTE_ADDR'];
+
+    $time_limit = 15;
+    $max_attempts = 5;
+
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*)
+        FROM login_attempts
+        WHERE ip_address = ?
+          AND attempt_time > (NOW() - INTERVAL ? MINUTE)
+          AND success = 0
+    ");
+    $stmt->execute([$ip_address, $time_limit]);
+    $failed_attempts = $stmt->fetchColumn();
+
+    if ($failed_attempts >= $max_attempts) {
+        redirect_with_error('too_many_attempts', 'password', $user_email);
     }
+
+    $sql = "SELECT firstname, passwd FROM users WHERE email = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$user_email]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($result && password_verify($user_password, $result['passwd'])) {
+        $log_stmt = $pdo->prepare("
+            INSERT INTO login_attempts (ip_address, email_attempted, success)
+            VALUES (?, ?, 1)
+        ");
+        $log_stmt->execute([$ip_address, $user_email]);
+
+        session_regenerate_id(true);
+        $_SESSION['email'] = $user_email;
+        $_SESSION['firstname'] = $result['firstname'];
+
+        header("Location: welcome.php");
+        exit;
+    } else {
+        $log_stmt = $pdo->prepare("
+            INSERT INTO login_attempts (ip_address, email_attempted, success)
+            VALUES (?, ?, 0)
+        ");
+        $log_stmt->execute([$ip_address, $user_email]);
+
+        redirect_with_error('invalid_login', 'password', $user_email);
+    }
+} catch (PDOException $e) {
+    error_log("Login error: " . $e->getMessage());
+    redirect_with_error('server_error', '', $user_email);
+}
 ?>
