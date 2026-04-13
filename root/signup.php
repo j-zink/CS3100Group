@@ -14,72 +14,59 @@ $user_password  = $_POST['password'] ?? '';
 $user_confirm   = $_POST['confirm'] ?? '';
 
 function redirect_with_error($error, $field, $firstname, $lastname, $email) {
-    $query = http_build_query([
-        'error' => $error,
-        'field' => $field,
-        'firstname' => $firstname,
-        'lastname' => $lastname,
-        'email' => $email
-    ]);
+    $url = "signup.html?error=" . urlencode($error)
+         . "&field=" . urlencode($field)
+         . "&firstname=" . urlencode($firstname)
+         . "&lastname=" . urlencode($lastname)
+         . "&email=" . urlencode($email);
 
-    header("Location: signup.html?$query");
+    header("Location: $url");
     exit;
 }
 
 // Basic validation
 if ($user_firstname === '') {
-    header("Location: signup.html?error=missing_firstname&field=firstname");
-    exit;
+    redirect_with_error('missing_firstname', 'firstname', $user_firstname, $user_lastname, $user_email);
 }
 
 if (strlen($user_firstname) > 20) {
-    header("Location: signup.html?error=long_firstname&field=firstname");
-    exit;
+    redirect_with_error('long_firstname', 'firstname', $user_firstname, $user_lastname, $user_email);
 }
 
 if ($user_lastname === '') {
-    header("Location: signup.html?error=missing_lastname&field=lastname");
-    exit;
+    redirect_with_error('missing_lastname', 'lastname', $user_firstname, $user_lastname, $user_email);
 }
 
 if (strlen($user_lastname) > 20) {
-    header("Location: signup.html?error=long_lastname&field=lastname");
-    exit;
+    redirect_with_error('long_lastname', 'lastname', $user_firstname, $user_lastname, $user_email);
 }
 
 if ($user_email === '') {
-    header("Location: signup.html?error=missing_email&field=email");
-    exit;
+    redirect_with_error('missing_email', 'email', $user_firstname, $user_lastname, $user_email);
 }
 
 if (strlen($user_email) > 100) {
-    header("Location: signup.html?error=long_email&field=email");
-    exit;
+    redirect_with_error('long_email', 'email', $user_firstname, $user_lastname, $user_email);
 }
 
 if (!filter_var($user_email, FILTER_VALIDATE_EMAIL)) {
-    header("Location: signup.html?error=invalid_email&field=email");
-    exit;
+    redirect_with_error('invalid_email', 'email', $user_firstname, $user_lastname, $user_email);
 }
 
 if ($user_password === '') {
-    header("Location: signup.html?error=missing_password&field=password");
-    exit;
+    redirect_with_error('missing_password', 'password', $user_firstname, $user_lastname, $user_email);
 }
 
 if (strlen($user_password) > 256) {
-    header("Location: signup.html?error=long_password&field=password");
-    exit;
+    redirect_with_error('long_password', 'password', $user_firstname, $user_lastname, $user_email);
 }
 
 if ($user_confirm === '') {
-    header("Location: signup.html?error=missing_confirm&field=confirm");
-    exit;
+    redirect_with_error('missing_confirm', 'confirm', $user_firstname, $user_lastname, $user_email);
 }
 
 if ($user_password !== $user_confirm) {
-    header("Location: signup.html?error=password_mismatch&field=confirm");
-    exit;
+    redirect_with_error('password_mismatch', 'confirm', $user_firstname, $user_lastname, $user_email);
 }
 
 try {
