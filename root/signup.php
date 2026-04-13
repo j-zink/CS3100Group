@@ -1,9 +1,11 @@
 <?php
     require_once 'config.php';
+    session_start();
 
     try {
-        $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
-        
+        $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass); // Add charset to prevent from injection attacks
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Will throw a more specific error message to the catch (PDOException $e)
+
         $user_firstname = $_POST['firstname'];
         $user_lastname = $_POST['lastname'];
         $user_email = $_POST['email'];

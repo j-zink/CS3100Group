@@ -1,9 +1,11 @@
 <?php
-    require_once 'config.php';
+    require_once '../config.php'; // Made this ../config.php because it is now one level above the root 
+    session_start(); // Start a new session at the beginning of each login
 
     try {
-        $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
-        
+        $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass); // Add charset to prevent from injection attacks
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Will throw a more specific error message to the catch (PDOException $e)
+
         $user_email = $_POST['email'];
         $user_password = $_POST['password'];
 
@@ -13,7 +15,7 @@
         $result = $stmt->fetch();
 
         if ($result && password_verify($user_password, $result['passwd'])) {
-            session_start();
+            session_regenerate_id(true); // Generate a new session id after each successful login so an attacker cannot utilize the previous one
             $_SESSION['email'] = $user_email;
             $_SESSION['firstname'] = $result['firstname'];
             
