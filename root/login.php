@@ -8,6 +8,24 @@
 
         $user_email = $_POST['email'];
         $user_password = $_POST['password'];
+        
+        // Get the user's IP address
+        $ip_address = $_SERVER['REMOTE_ADDR'];
+
+        // --- RATE LIMITING CHECK ---
+        $time_limit = 15; // Lockout time in minutes
+        $max_attempts = 5; // Maximum allowed failed attempts
+
+        // Count failed attempts from this IP within the time limit
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip_address = ? AND attempt_time > (NOW() - INTERVAL ? MINUTE) AND success = 0");
+        $stmt->execute([$ip_address, $time_limit]);
+        $failed_attempts = $stmt->fetchColumn();
+
+        if ($failed_attempts >= $max_attempts) {
+            // Block the user if they've exceeded the limit
+            die("Too many failed login attempts. Please wait 15 minutes and try again.");
+        }
+        // ---------------------------
 
         $sql = "SELECT firstname, passwd FROM users WHERE email = ?";
         $stmt = $pdo->prepare($sql);
@@ -15,6 +33,11 @@
         $result = $stmt->fetch();
 
         if ($result && password_verify($user_password, $result['passwd'])) {
+            
+            // --- LOG SUCCESSFUL ATTEMPT ---
+            $log_stmt = $pdo->prepare("INSERT INTO login_attempts (ip_address, email_attempted, success) VALUES (?, ?, 1)");
+            $log_stmt->execute([$ip_address, $user_email]);
+            
             session_regenerate_id(true); // Generate a new session id after each successful login so an attacker cannot utilize the previous one
             $_SESSION['email'] = $user_email;
             $_SESSION['firstname'] = $result['firstname'];
@@ -38,6 +61,10 @@
             <?php
             exit;
         } else {
+            // --- LOG FAILED ATTEMPT ---
+            $log_stmt = $pdo->prepare("INSERT INTO login_attempts (ip_address, email_attempted, success) VALUES (?, ?, 0)");
+            $log_stmt->execute([$ip_address, $user_email]);
+            
             echo "Invalid email or password!";
         }
     } 
