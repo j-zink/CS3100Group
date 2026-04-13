@@ -41,7 +41,7 @@ try {
 
     $ip_address = $_SERVER['REMOTE_ADDR'];
 
-    $time_limit = 15;
+    $time_limit = 5;
     $max_attempts = 5;
 
     $stmt = $pdo->prepare("
