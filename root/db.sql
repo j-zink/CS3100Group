@@ -10,3 +10,11 @@ CREATE TABLE users (
     email VARCHAR(100) NOT NULL UNIQUE,
     passwd VARCHAR(256) NOT NULL
 );
+
+CREATE TABLE login_attempts (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    ip_address VARCHAR(45) NOT NULL,
+    email_attempted VARCHAR(100) NOT NULL,
+    attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    success TINYINT(1) NOT NULL
+);
