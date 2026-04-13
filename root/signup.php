@@ -13,6 +13,19 @@ $user_email     = trim($_POST['email'] ?? '');
 $user_password  = $_POST['password'] ?? '';
 $user_confirm   = $_POST['confirm'] ?? '';
 
+function redirect_with_error($error, $field, $firstname, $lastname, $email) {
+    $query = http_build_query([
+        'error' => $error,
+        'field' => $field,
+        'firstname' => $firstname,
+        'lastname' => $lastname,
+        'email' => $email
+    ]);
+
+    header("Location: signup.html?$query");
+    exit;
+}
+
 // Basic validation
 if ($user_firstname === '') {
     header("Location: signup.html?error=missing_firstname&field=firstname");
@@ -91,14 +104,11 @@ try {
     header("Location: index.html?signup=success");
     exit;
 } catch (PDOException $e) {
-    // 23000 = integrity constraint violation, commonly duplicate unique value
     if ($e->getCode() == 23000) {
-        header("Location: signup.html?error=email_taken&field=email");
-        exit;
+        redirect_with_error('email_taken', 'email', $user_firstname, $user_lastname, $user_email);
     }
 
     error_log("Signup error: " . $e->getMessage());
-    header("Location: signup.html?error=server_error");
-    exit;
+    redirect_with_error('server_error', '', $user_firstname, $user_lastname, $user_email);
 }
 ?>
