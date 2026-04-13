@@ -69,3 +69,11 @@
             color: #667eea;
             text-decoration: none;
         }
+        .input-error {
+            border: 2px solid red !important;
+        }
+        .error-message {
+            color: red;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+        }
